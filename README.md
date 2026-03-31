@@ -151,10 +151,21 @@ Exemplos:
 * `drawButton`: Lógica visual e interativa dos componentes de interface. 
 * `renderText`: Utilitário para renderização de fontes e dados técnicos em tempo real. 
 
+---
+
+### 3. Victor Maki Tarcha  (RA: 10419861)
+**Responsável pela Interatividade, Interface e Integração:**
+
+* **Controle de Fluxo e Eventos:** Implementação do **loop principal de eventos (SDL3)** para teclado e mouse, gerenciando atalhos nativos e interações precisas com a interface do usuário.
+**Gerenciamento de Interface (Multi-Window):** Criação, dimensionamento e posicionamento dinâmico de múltiplas janelas simultâneas (Imagem Principal e Histograma) com renderização sincronizada a aproximadamente 60 FPS.
+**Interatividade de Equalização (Toggle):** Construção da lógica de alternância em tempo real entre a visualização da imagem original e da versão equalizada, otimizando a performance ao evitar o recarregamento do arquivo em disco.
+**Pipeline de Inicialização e Segurança:** Configuração do carregamento inicial de imagens via linha de comando, sistema de fallback multiplataforma para carregamento de fontes TTF e estruturação de rotinas rigorosas de limpeza de memória para prevenção de memory leaks.
 
 
-
-
+**Principais Funções Desenvolvidas:**
+* `main`: Orquestração de todo o ciclo de vida da aplicação, desde a validação de argumentos e inicialização dos subsistemas (SDL/TTF) até o loop de renderização.
+* `SDL_PollEvent (Gestão de Eventos)`: Mapeamento de interações do usuário, capturando estados do mouse para a lógica de botões e atalhos de teclado (como a tecla S para salvar).
+* `cleanup (Gestão de Memória)`: Bloco de liberação sistemática de recursos, garantindo a destruição segura de texturas, superfícies, renderizadores e ponteiros de janela no encerramento do programa.
 
 ---
 
