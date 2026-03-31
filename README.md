@@ -123,35 +123,15 @@ Exemplos:
 
 ## Contribuições dos Integrantes
 
-1. **Leonardo Moreira dos Santos: ** Desenvolvimento do Core de Processamento: Implementação da conversão de imagens coloridas para escala de cinza utilizando a fórmula de luminância $Y = 0.2125R + 0.7154G + 0.0721B$.
-
-
-
-Algoritmos de Histograma: Criação das funções de contagem de frequência de níveis de cinza e análise estatística (Média e Desvio Padrão).
-
-
-
- essas funções resolvem os requisitos mais pesados do projeto:
-
-
-
-Mecanismo de Equalização: Implementação do algoritmo de equalização global de histograma baseado na Função de Distribuição Cumulativa (CDF).
-
-
-
-Utilitários de Superfície: Gestão de conversão de formatos de pixels (RGBA8888) e suporte ao salvamento de arquivos em disco
-
-
-
-convertToGray: Garante que qualquer imagem de entrada (PNG/JPG/BMP) seja tratada de forma padronizada.
-
-
-
-analyzeHistogram: É o que permite ao programa dizer se a imagem está "clara" ou se o contraste é "baixo".
-
-
-
-equalizeHistogram: É a funcionalidade principal da aplicação, que redistribui os tons para melhorar o aspecto visual.
+1. **Leonardo Moreira dos Santos: **
+   **Desenvolvimento do Core de Processamento:** Implementação da conversão de imagens coloridas para escala de cinza utilizando a fórmula de luminância Y = 0.2125R + 0.7154G + 0.0721B$.
+   **Algoritmos de Histograma:** Criação das funções de contagem de frequência de níveis de cinza e análise estatística (Média e Desvio Padrão).
+   Essas funções resolvem os requisitos mais pesados do projeto:
+   **Mecanismo de Equalização:** Implementação do algoritmo de equalização global de histograma baseado na Função de Distribuição Cumulativa (CDF).
+   **Utilitários de Superfície:** Gestão de conversão de formatos de pixels (RGBA8888) e suporte ao salvamento de arquivos em disco
+   **convertToGray:** Garante que qualquer imagem de entrada (PNG/JPG/BMP) seja tratada de forma padronizada.
+   **analyzeHistogram:** É o que permite ao programa dizer se a imagem está "clara" ou se o contraste é "baixo".
+   **equalizeHistogram:** É a funcionalidade principal da aplicação, que redistribui os tons para melhorar o aspecto visual.
 
 ---
 
