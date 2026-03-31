@@ -1,3 +1,7 @@
+| (Matheus Alonso Varjao) | (10417888) |
+| (Victor Maki) | (10419861) |
+| (Leonardo Moreira) | (10417555) |
+
 /*
  * Projeto 1 - Processamento de Imagens
  * Disciplina: Computação Visual
