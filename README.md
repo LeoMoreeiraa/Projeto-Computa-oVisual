@@ -8,9 +8,9 @@
 
 ## Integrantes do Grupo
 
-| (Matheus Alonso Varjao) | (10417888) |
-| (Victor Maki) | (10419861) |
-| (Leonardo Moreira) | (10417555) |
+| Matheus Alonso Varjao | 10417888 |
+| (Victor Maki) | 10419861 |
+| Leonardo Moreira | 10417555 |
 
 
 ---
