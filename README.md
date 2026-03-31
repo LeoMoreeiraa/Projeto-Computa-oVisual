@@ -10,10 +10,10 @@
 
 | Nome Completo | RA |
 |---|---|
-| (Integrante 1) | (RA) |
+| Leonardo Moreira dos Santos | 10417555 |
 | (Integrante 2) | (RA) |
 | (Integrante 3) | (RA) |
-| (Integrante 4) | (RA) |
+
 
 ---
 
