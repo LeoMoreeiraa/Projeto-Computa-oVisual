@@ -437,7 +437,115 @@ int main(int argc, char* argv[]) {
         goto cleanup;
     }
  
-
+    // Carrega fonte padrão do sistema
+    {
+        const char* fontPaths[] = {
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+            "/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf",
+            "/usr/share/fonts/TTF/DejaVuSans.ttf",
+            "/usr/share/fonts/TTF/arial.ttf",
+            "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
+            "/Library/Fonts/Arial.ttf",
+            "C:/Windows/Fonts/arial.ttf",
+            nullptr
+        };
+        for (int i = 0; fontPaths[i]; ++i) {
+            app.font = TTF_OpenFont(fontPaths[i], FONT_SIZE);
+            if (app.font) break;
+        }
+        if (!app.font)
+            fprintf(stderr, "Aviso: fonte TTF nao encontrada. Textos nao serao exibidos.\n");
+    }
+ 
+    reloadMainTexture(app);
+ 
+    // Loop de eventos do programa
+    {
+        bool running = true;
+        SDL_Event ev;
+ 
+        while (running) {
+            while (SDL_PollEvent(&ev)) {
+                switch (ev.type) {
+ 
+                case SDL_EVENT_QUIT:
+                case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+                    running = false;
+                    break;
+ 
+                case SDL_EVENT_KEY_DOWN:
+                    if (ev.key.key == SDLK_S)      saveImage(app); // Salva com S [cite: 79]
+                    if (ev.key.key == SDLK_ESCAPE)  running = false; // Fecha com ESC
+                    break;
+ 
+                case SDL_EVENT_MOUSE_MOTION:
+                    // Atualiza estado de hover do botão
+                    if (ev.motion.windowID == SDL_GetWindowID(app.secWin)) {
+                        int mx = (int)ev.motion.x, my = (int)ev.motion.y;
+                        SDL_Rect& b = app.btnRect;
+                        app.btnHover = mx >= b.x && mx < b.x + b.w &&
+                                       my >= b.y && my < b.y + b.h;
+                    }
+                    break;
+ 
+                case SDL_EVENT_MOUSE_BUTTON_DOWN:
+                    // Detecta clique no botão
+                    if (ev.button.windowID == SDL_GetWindowID(app.secWin) &&
+                        ev.button.button == SDL_BUTTON_LEFT) {
+                        int mx = (int)ev.button.x, my = (int)ev.button.y;
+                        SDL_Rect& b = app.btnRect;
+                        if (mx >= b.x && mx < b.x + b.w &&
+                            my >= b.y && my < b.y + b.h)
+                            app.btnDown = true;
+                    }
+                    break;
+ 
+                case SDL_EVENT_MOUSE_BUTTON_UP:
+                    // Executa a equalização ao soltar o clique [cite: 74, 75]
+                    if (ev.button.windowID == SDL_GetWindowID(app.secWin) &&
+                        ev.button.button == SDL_BUTTON_LEFT) {
+                        if (app.btnDown) {
+                            int mx = (int)ev.button.x, my = (int)ev.button.y;
+                            SDL_Rect& b = app.btnRect;
+                            if (mx >= b.x && mx < b.x + b.w &&
+                                my >= b.y && my < b.y + b.h)
+                                toggleEqualize(app);
+                            app.btnDown = false;
+                        }
+                    }
+                    break;
+ 
+                case SDL_EVENT_WINDOW_MOUSE_LEAVE:
+                    if (ev.window.windowID == SDL_GetWindowID(app.secWin))
+                        app.btnHover = false;
+                    break;
+ 
+                default:
+                    break;
+                }
+            }
+ 
+            renderMain(app);
+            renderSecondary(app);
+            SDL_Delay(16); // Aproximadamente 60 FPS
+        }
+    }
+ 
+cleanup:
+    // Gerenciamento de memória: libera recursos antes de fechar [cite: 86]
+    if (app.font)     TTF_CloseFont(app.font);
+    if (app.mainTex)  SDL_DestroyTexture(app.mainTex);
+    if (app.eqSurf)   SDL_DestroySurface(app.eqSurf);
+    if (app.graySurf) SDL_DestroySurface(app.graySurf);
+    if (app.secRen)   SDL_DestroyRenderer(app.secRen);
+    if (app.secWin)   SDL_DestroyWindow(app.secWin);
+    if (app.mainRen)  SDL_DestroyRenderer(app.mainRen);
+    if (app.mainWin)  SDL_DestroyWindow(app.mainWin);
+    TTF_Quit();
+    SDL_Quit();
+    return 0;
+}
 
 
 
