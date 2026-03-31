@@ -158,3 +158,44 @@ static void renderText(SDL_Renderer* ren, TTF_Font* font,
     SDL_RenderTexture(ren, t, nullptr, &dst);
     SDL_DestroyTexture(t);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ─── Função Principal ─────────────────────────────────────────────────────────
+ 
+int main(int argc, char* argv[]) {
+    // Valida argumento de linha de comando [cite: 47]
+    if (argc < 2) {
+        fprintf(stderr, "Uso: %s <caminho_da_imagem>\n", argv[0]);
+        return 1;
+    }
+ 
