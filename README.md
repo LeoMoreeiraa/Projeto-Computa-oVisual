@@ -133,6 +133,13 @@ Exemplos:
    **analyzeHistogram:** É o que permite ao programa dizer se a imagem está "clara" ou se o contraste é "baixo".
    **equalizeHistogram:** É a funcionalidade principal da aplicação, que redistribui os tons para melhorar o aspecto visual.
 
+2. **Matheus Alonso Varjao: **
+   Responsável por toda a interface e visualização em SDL2. Ele desenvolveu o sistema de janelas, a renderização do gráfico do histograma e a exibição das métricas de brilho e contraste na tela. Além disso, criar a lógica dos botões e a função de alternar entre a imagem original e a equalizada, garantindo também que o resultado final pudesse ser salvo em um arquivo PNG.
+
+
+
+
+
 ---
 
 ## Estrutura do Repositório
