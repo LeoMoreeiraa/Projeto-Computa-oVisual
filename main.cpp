@@ -179,8 +179,14 @@ static void drawHistogram(SDL_Renderer* ren, const int hist[256],
         float barH = (float)hist[i] / maxVal * h;
         SDL_FRect bar = { x + i * barW, y + h - barH, barW, barH };
         SDL_RenderFillRect(ren, &bar);
-
-
+ }
+ 
+    // Borda do gráfico
+    SDL_SetRenderDrawColor(ren, 180, 180, 180, 255);
+    SDL_FRect border = { (float)x, (float)y, (float)w, (float)h };
+    SDL_RenderRect(ren, &border);
+}
+ 
 
 
 
