@@ -159,7 +159,14 @@ static void renderText(SDL_Renderer* ren, TTF_Font* font,
     SDL_DestroyTexture(t);
 }
 
-
+// ─── Desenho do Histograma ────────────────────────────────────────────────────
+ 
+static void drawHistogram(SDL_Renderer* ren, const int hist[256],
+                           int x, int y, int w, int h) {
+    int maxVal = 1;
+    for (int i = 0; i < 256; ++i) if (hist[i] > maxVal) maxVal = hist[i];
+ 
+    float barW = (float)w / 256.0f;
 
 
 
