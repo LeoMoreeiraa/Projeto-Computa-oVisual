@@ -123,7 +123,6 @@ Exemplos:
 
 ## Contribuições dos Integrantes
 
-## Contribuições dos Integrantes
 
 ### 1. Leonardo Moreira dos Santos (RA: 10417555)
 **Responsável pelo Núcleo de Processamento de Imagens:**
