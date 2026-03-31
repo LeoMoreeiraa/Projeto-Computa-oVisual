@@ -371,6 +371,72 @@ int main(int argc, char* argv[]) {
 
     App app;
 
+    // Detecta e converte para escala de cinza se necessário [cite: 58, 59]
+    if (isGrayscale(loaded)) {
+        SDL_Log("Imagem ja esta em escala de cinza.");
+        app.graySurf = toRGBA(loaded);
+    } else {
+        SDL_Log("Convertendo para escala de cinza.");
+        app.graySurf = convertToGray(loaded);
+    }
+    SDL_DestroySurface(loaded);
+ 
+    if (!app.graySurf) {
+        fprintf(stderr, "Falha ao processar imagem.\n");
+        TTF_Quit(); SDL_Quit(); return 1;
+    }
+ 
+    app.curSurf = app.graySurf;
+    refreshStats(app);
+ 
+    int imgW = app.graySurf->w;
+    int imgH = app.graySurf->h;
+ 
+    // Cria janela principal adaptada ao tamanho da imagem [cite: 63]
+    app.mainWin = SDL_CreateWindow("Processamento de Imagens", imgW, imgH,
+                                   SDL_WINDOW_RESIZABLE);
+    if (!app.mainWin) {
+        fprintf(stderr, "Falha ao criar janela principal: %s\n", SDL_GetError());
+        goto cleanup;
+    }
+ 
+    // Centraliza na tela [cite: 63]
+    SDL_SetWindowPosition(app.mainWin, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+ 
+    app.mainRen = SDL_CreateRenderer(app.mainWin, nullptr);
+    if (!app.mainRen) {
+        fprintf(stderr, "Falha ao criar renderer principal: %s\n", SDL_GetError());
+        goto cleanup;
+    }
+ 
+    // Cria janela secundária filha posicionada ao lado [cite: 64]
+    {
+        int mx, my;
+        SDL_GetWindowPosition(app.mainWin, &mx, &my);
+ 
+        SDL_PropertiesID props = SDL_CreateProperties();
+        SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_PARENT_POINTER, app.mainWin);
+        SDL_SetStringProperty(props,  SDL_PROP_WINDOW_CREATE_TITLE_STRING,   "Histograma");
+        SDL_SetNumberProperty(props,  SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER,   SEC_WIN_W);
+        SDL_SetNumberProperty(props,  SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER,  SEC_WIN_H);
+        SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_UTILITY_BOOLEAN, true);
+ 
+        app.secWin = SDL_CreateWindowWithProperties(props);
+        SDL_DestroyProperties(props);
+ 
+        if (!app.secWin) {
+            fprintf(stderr, "Falha ao criar janela secundaria: %s\n", SDL_GetError());
+            goto cleanup;
+        }
+        SDL_SetWindowPosition(app.secWin, mx + imgW + 8, my);
+    }
+ 
+    app.secRen = SDL_CreateRenderer(app.secWin, nullptr);
+    if (!app.secRen) {
+        fprintf(stderr, "Falha ao criar renderer secundario: %s\n", SDL_GetError());
+        goto cleanup;
+    }
+ 
 
 
 
