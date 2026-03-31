@@ -123,19 +123,45 @@ Exemplos:
 
 ## Contribuições dos Integrantes
 
-1. **Leonardo Moreira dos Santos: **
-   **Desenvolvimento do Core de Processamento:** Implementação da conversão de imagens coloridas para escala de cinza utilizando a fórmula de luminância Y = 0.2125R + 0.7154G + 0.0721B$.
-   **Algoritmos de Histograma:** Criação das funções de contagem de frequência de níveis de cinza e análise estatística (Média e Desvio Padrão).
-   Essas funções resolvem os requisitos mais pesados do projeto:
-   **Mecanismo de Equalização:** Implementação do algoritmo de equalização global de histograma baseado na Função de Distribuição Cumulativa (CDF).
-   **Utilitários de Superfície:** Gestão de conversão de formatos de pixels (RGBA8888) e suporte ao salvamento de arquivos em disco
-   **convertToGray:** Garante que qualquer imagem de entrada (PNG/JPG/BMP) seja tratada de forma padronizada.
-   **analyzeHistogram:** É o que permite ao programa dizer se a imagem está "clara" ou se o contraste é "baixo".
-   **equalizeHistogram:** É a funcionalidade principal da aplicação, que redistribui os tons para melhorar o aspecto visual.
+## Contribuições dos Integrantes
 
-2. **Matheus Alonso Varjao: **
-   Responsável por toda a interface e visualização em SDL2. Ele desenvolveu o sistema de janelas, a renderização do gráfico do histograma e a exibição das métricas de brilho e contraste na tela. Além disso, criar a lógica dos botões e a função de alternar entre a imagem original e a equalizada, garantindo também que o resultado final pudesse ser salvo em um arquivo PNG.
+### 1. Leonardo Moreira dos Santos (RA: 10417555)
+**Responsável pelo Núcleo de Processamento de Imagens:**
 
+* [cite_start]**Conversão de Espaço de Cor:** Implementação do algoritmo de conversão de imagens coloridas para escala de cinza utilizando a fórmula de luminância: $Y = 0.2125R + 0.7154G + 0.0721B$. 
+* [cite_start]**Análise Estatística de Dados:** Criação das rotinas de contagem de frequência (histograma) e cálculo de métricas estatísticas como Média de Intensidade e Desvio Padrão. 
+* [cite_start]**Algoritmo de Equalização:** Desenvolvimento do mecanismo de equalização global baseado na Função de Distribuição Cumulativa (CDF) para redistribuição de tons.
+* [cite_start]**Gestão de Memória e Superfícies:** Implementação de utilitários para conversão de formatos de pixels (RGBA8888) e rotinas de exportação de arquivos para o formato PNG. 
+
+**Principais Funções Desenvolvidas:**
+* [cite_start]`convertToGray`: Padronização de imagens PNG/JPG/BMP para a base de processamento do projeto. 
+* [cite_start]`analyzeHistogram`: Motor de classificação automática de brilho (clara/média/escura) e contraste. 
+* [cite_start]`equalizeHistogram`: Funcionalidade central para expansão de histograma e melhoria visual. 
+
+---
+
+### 2. Matheus Alonso Varjao (RA: 10417888)
+**Responsável pela Interface Gráfica e Visualização (GUI):**
+
+* [cite_start]**Arquitetura de Janelas:** Desenvolvimento do sistema de janelas múltiplas utilizando a biblioteca **SDL3**, garantindo que a janela secundária seja criada como dependente (filha) da principal.
+* [cite_start]**Visualização de Dados:** Implementação da renderização gráfica do histograma de forma proporcional e clara na janela secundária. 
+* [cite_start]**Sistema de UI e Primitivas:** Criação de componentes visuais (botões interativos) desenhados com primitivas SDL, incluindo a gestão de estados visuais (Normal, Hover e Pressionado). 
+* [cite_start]**Integração de Texto:** Implementação da exibição dinâmica das métricas de processamento na tela através da biblioteca `SDL_ttf`. 
+
+
+**Principais Funções Desenvolvidas:**
+* [cite_start]`renderSecondary`: Gestão completa da janela de histograma e informações de análise. 
+* [cite_start]`drawButton`: Lógica visual e interativa dos componentes de interface. 
+* [cite_start]`renderText`: Utilitário para renderização de fontes e dados técnicos em tempo real. 
+
+---
+
+### 3. Victor Maki Tarcha (RA: 10419861)
+**Responsável pela Interatividade e Controle de Fluxo:**
+
+* [cite_start]**Gestão de Eventos:** Implementação do loop principal de eventos, tratando entradas de teclado (tecla **S** para salvar) e mouse para interação com a GUI. 
+* [cite_start]**Lógica de Alternância (Toggle):** Desenvolvimento da lógica de controle que permite alternar entre a visualização original em cinza e a versão equalizada sem recarregar o arquivo. 
+* [cite_start]**Sincronização de Renderização:** Garantia de que as atualizações de processamento (equalização) sejam refletidas simultaneamente em ambas as janelas. 
 
 
 
