@@ -11,7 +11,11 @@
 | Matheus Alonso Varjao | 10417888 |
 | (Victor Maki) | 10419861 |
 | Leonardo Moreira | 10417555 |
-
+| # | Nome | RA |
+|---|---|---|
+| 1 | Leonardo Moreira | 10417555 |
+| 2 | Victor Maki Tarcha | 10419861 |
+| 3 | Matheus Alonso Varjao | 10417888 |
 
 ---
 
