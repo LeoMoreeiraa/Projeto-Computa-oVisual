@@ -1,0 +1,15 @@
+# Compilação
+*.o
+programa
+programa.exe
+
+# Saída
+output_image.png
+
+# IDEs
+.vscode/
+.idea/
+*.user
+
+# macOS
+.DS_Store
