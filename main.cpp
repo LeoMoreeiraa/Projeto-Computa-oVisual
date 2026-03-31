@@ -173,6 +173,12 @@ static void drawHistogram(SDL_Renderer* ren, const int hist[256],
     SDL_FRect bg = { (float)x, (float)y, (float)w, (float)h };
     SDL_RenderFillRect(ren, &bg);
 
+ // Barras do histograma
+    SDL_SetRenderDrawColor(ren, 220, 220, 220, 255);
+    for (int i = 0; i < 256; ++i) {
+        float barH = (float)hist[i] / maxVal * h;
+        SDL_FRect bar = { x + i * barW, y + h - barH, barW, barH };
+        SDL_RenderFillRect(ren, &bar);
 
 
 
@@ -198,14 +204,3 @@ static void drawHistogram(SDL_Renderer* ren, const int hist[256],
 
 
 
-
-
-// ─── Função Principal ─────────────────────────────────────────────────────────
- 
-int main(int argc, char* argv[]) {
-    // Valida argumento de linha de comando [cite: 47]
-    if (argc < 2) {
-        fprintf(stderr, "Uso: %s <caminho_da_imagem>\n", argv[0]);
-        return 1;
-    }
- 
