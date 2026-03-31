@@ -168,7 +168,10 @@ static void drawHistogram(SDL_Renderer* ren, const int hist[256],
  
     float barW = (float)w / 256.0f;
 
-
+// Fundo do gráfico
+    SDL_SetRenderDrawColor(ren, 30, 30, 30, 255);
+    SDL_FRect bg = { (float)x, (float)y, (float)w, (float)h };
+    SDL_RenderFillRect(ren, &bg);
 
 
 
