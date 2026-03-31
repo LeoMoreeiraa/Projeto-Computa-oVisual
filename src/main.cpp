@@ -340,7 +340,211 @@ static void saveImage(App& app) {
         SDL_Log("Erro ao salvar: %s", SDL_GetError());
 }
  
+// ─── Função Principal ─────────────────────────────────────────────────────────
+ 
+int main(int argc, char* argv[]) {
+    // Valida argumento de linha de comando [cite: 47]
+    if (argc < 2) {
+        fprintf(stderr, "Uso: %s <caminho_da_imagem>\n", argv[0]);
+        return 1;
+    }
+ 
+    // Inicializa subsistemas da SDL3
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
+        fprintf(stderr, "SDL_Init falhou: %s\n", SDL_GetError());
+        return 1;
+    }
 
+    if (!TTF_Init()) {
+        fprintf(stderr, "TTF_Init falhou: %s\n", SDL_GetError());
+        SDL_Quit();
+        return 1;
+    }
+
+    // Carrega a imagem do arquivo [cite: 55]
+    SDL_Surface* loaded = IMG_Load(argv[1]);
+    if (!loaded) {
+        fprintf(stderr, "Erro ao carregar '%s': %s\n", argv[1], SDL_GetError());
+        TTF_Quit(); SDL_Quit(); return 1;
+    }
+
+    App app;
+
+    // Detecta e converte para escala de cinza se necessário [cite: 58, 59]
+    if (isGrayscale(loaded)) {
+        SDL_Log("Imagem ja esta em escala de cinza.");
+        app.graySurf = toRGBA(loaded);
+    } else {
+        SDL_Log("Convertendo para escala de cinza.");
+        app.graySurf = convertToGray(loaded);
+    }
+    SDL_DestroySurface(loaded);
+ 
+    if (!app.graySurf) {
+        fprintf(stderr, "Falha ao processar imagem.\n");
+        TTF_Quit(); SDL_Quit(); return 1;
+    }
+ 
+    app.curSurf = app.graySurf;
+    refreshStats(app);
+ 
+    int imgW = app.graySurf->w;
+    int imgH = app.graySurf->h;
+ 
+    // Cria janela principal adaptada ao tamanho da imagem [cite: 63]
+    app.mainWin = SDL_CreateWindow("Processamento de Imagens", imgW, imgH,
+                                   SDL_WINDOW_RESIZABLE);
+    if (!app.mainWin) {
+        fprintf(stderr, "Falha ao criar janela principal: %s\n", SDL_GetError());
+        goto cleanup;
+    }
+ 
+    // Centraliza na tela [cite: 63]
+    SDL_SetWindowPosition(app.mainWin, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+ 
+    app.mainRen = SDL_CreateRenderer(app.mainWin, nullptr);
+    if (!app.mainRen) {
+        fprintf(stderr, "Falha ao criar renderer principal: %s\n", SDL_GetError());
+        goto cleanup;
+    }
+ 
+    // Cria janela secundária filha posicionada ao lado [cite: 64]
+    {
+        int mx, my;
+        SDL_GetWindowPosition(app.mainWin, &mx, &my);
+ 
+        SDL_PropertiesID props = SDL_CreateProperties();
+        SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_PARENT_POINTER, app.mainWin);
+        SDL_SetStringProperty(props,  SDL_PROP_WINDOW_CREATE_TITLE_STRING,   "Histograma");
+        SDL_SetNumberProperty(props,  SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER,   SEC_WIN_W);
+        SDL_SetNumberProperty(props,  SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER,  SEC_WIN_H);
+        SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_UTILITY_BOOLEAN, true);
+ 
+        app.secWin = SDL_CreateWindowWithProperties(props);
+        SDL_DestroyProperties(props);
+ 
+        if (!app.secWin) {
+            fprintf(stderr, "Falha ao criar janela secundaria: %s\n", SDL_GetError());
+            goto cleanup;
+        }
+        SDL_SetWindowPosition(app.secWin, mx + imgW + 8, my);
+    }
+ 
+    app.secRen = SDL_CreateRenderer(app.secWin, nullptr);
+    if (!app.secRen) {
+        fprintf(stderr, "Falha ao criar renderer secundario: %s\n", SDL_GetError());
+        goto cleanup;
+    }
+ 
+    // Carrega fonte padrão do sistema
+    {
+        const char* fontPaths[] = {
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+            "/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf",
+            "/usr/share/fonts/TTF/DejaVuSans.ttf",
+            "/usr/share/fonts/TTF/arial.ttf",
+            "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
+            "/Library/Fonts/Arial.ttf",
+            "C:/Windows/Fonts/arial.ttf",
+            nullptr
+        };
+        for (int i = 0; fontPaths[i]; ++i) {
+            app.font = TTF_OpenFont(fontPaths[i], FONT_SIZE);
+            if (app.font) break;
+        }
+        if (!app.font)
+            fprintf(stderr, "Aviso: fonte TTF nao encontrada. Textos nao serao exibidos.\n");
+    }
+ 
+    reloadMainTexture(app);
+ 
+    // Loop de eventos do programa
+    {
+        bool running = true;
+        SDL_Event ev;
+ 
+        while (running) {
+            while (SDL_PollEvent(&ev)) {
+                switch (ev.type) {
+ 
+                case SDL_EVENT_QUIT:
+                case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+                    running = false;
+                    break;
+ 
+                case SDL_EVENT_KEY_DOWN:
+                    if (ev.key.key == SDLK_S)      saveImage(app); // Salva com S [cite: 79]
+                    if (ev.key.key == SDLK_ESCAPE)  running = false; // Fecha com ESC
+                    break;
+ 
+                case SDL_EVENT_MOUSE_MOTION:
+                    // Atualiza estado de hover do botão
+                    if (ev.motion.windowID == SDL_GetWindowID(app.secWin)) {
+                        int mx = (int)ev.motion.x, my = (int)ev.motion.y;
+                        SDL_Rect& b = app.btnRect;
+                        app.btnHover = mx >= b.x && mx < b.x + b.w &&
+                                       my >= b.y && my < b.y + b.h;
+                    }
+                    break;
+ 
+                case SDL_EVENT_MOUSE_BUTTON_DOWN:
+                    // Detecta clique no botão
+                    if (ev.button.windowID == SDL_GetWindowID(app.secWin) &&
+                        ev.button.button == SDL_BUTTON_LEFT) {
+                        int mx = (int)ev.button.x, my = (int)ev.button.y;
+                        SDL_Rect& b = app.btnRect;
+                        if (mx >= b.x && mx < b.x + b.w &&
+                            my >= b.y && my < b.y + b.h)
+                            app.btnDown = true;
+                    }
+                    break;
+ 
+                case SDL_EVENT_MOUSE_BUTTON_UP:
+                    // Executa a equalização ao soltar o clique [cite: 74, 75]
+                    if (ev.button.windowID == SDL_GetWindowID(app.secWin) &&
+                        ev.button.button == SDL_BUTTON_LEFT) {
+                        if (app.btnDown) {
+                            int mx = (int)ev.button.x, my = (int)ev.button.y;
+                            SDL_Rect& b = app.btnRect;
+                            if (mx >= b.x && mx < b.x + b.w &&
+                                my >= b.y && my < b.y + b.h)
+                                toggleEqualize(app);
+                            app.btnDown = false;
+                        }
+                    }
+                    break;
+ 
+                case SDL_EVENT_WINDOW_MOUSE_LEAVE:
+                    if (ev.window.windowID == SDL_GetWindowID(app.secWin))
+                        app.btnHover = false;
+                    break;
+ 
+                default:
+                    break;
+                }
+            }
+ 
+            renderMain(app);
+            renderSecondary(app);
+            SDL_Delay(16); // Aproximadamente 60 FPS
+        }
+    }
+ 
+cleanup:
+    // Gerenciamento de memória: libera recursos antes de fechar [cite: 86]
+    if (app.font)     TTF_CloseFont(app.font);
+    if (app.mainTex)  SDL_DestroyTexture(app.mainTex);
+    if (app.eqSurf)   SDL_DestroySurface(app.eqSurf);
+    if (app.graySurf) SDL_DestroySurface(app.graySurf);
+    if (app.secRen)   SDL_DestroyRenderer(app.secRen);
+    if (app.secWin)   SDL_DestroyWindow(app.secWin);
+    if (app.mainRen)  SDL_DestroyRenderer(app.mainRen);
+    if (app.mainWin)  SDL_DestroyWindow(app.mainWin);
+    TTF_Quit();
+    SDL_Quit();
+    return 0;
+}
 
 
 
