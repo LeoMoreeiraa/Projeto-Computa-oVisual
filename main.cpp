@@ -186,9 +186,159 @@ static void drawHistogram(SDL_Renderer* ren, const int hist[256],
     SDL_FRect border = { (float)x, (float)y, (float)w, (float)h };
     SDL_RenderRect(ren, &border);
 }
+// ─── Desenho do Botão ─────────────────────────────────────────────────────────
  
-
-
+enum class BtnState { NORMAL, HOVER, PRESSED };
+ 
+static void drawButton(SDL_Renderer* ren, TTF_Font* font,
+                       const char* label, int x, int y, int w, int h,
+                       BtnState state) {
+    SDL_Color bg;
+    switch (state) {
+        case BtnState::HOVER:   bg = BTN_HOVER;   break;
+        case BtnState::PRESSED: bg = BTN_PRESSED; break;
+        default:                bg = BTN_NORMAL;  break;
+    }
+    SDL_SetRenderDrawColor(ren, bg.r, bg.g, bg.b, 255);
+    SDL_FRect rect = { (float)x, (float)y, (float)w, (float)h };
+    SDL_RenderFillRect(ren, &rect);
+ 
+    SDL_SetRenderDrawColor(ren, 200, 220, 255, 255);
+    SDL_RenderRect(ren, &rect);
+ 
+    SDL_Color textCol = { 255, 255, 255, 255 };
+    int tw = 0, th = 0;
+    TTF_GetStringSize(font, label, 0, &tw, &th);
+    renderText(ren, font, label, x + (w - tw) / 2, y + (h - th) / 2, textCol);
+}
+// ─── Estado da Aplicação ──────────────────────────────────────────────────────
+ 
+struct App {
+    SDL_Window* mainWin  = nullptr;
+    SDL_Renderer* mainRen  = nullptr;
+    SDL_Window* secWin   = nullptr;
+    SDL_Renderer* secRen   = nullptr;
+ 
+    SDL_Surface* graySurf = nullptr; // Superfície original em cinza
+    SDL_Surface* eqSurf   = nullptr; // Superfície equalizada
+    SDL_Surface* curSurf  = nullptr; // Ponteiro para a superfície atual exibida
+ 
+    SDL_Texture* mainTex  = nullptr;
+ 
+    TTF_Font* font     = nullptr;
+ 
+    bool equalized = false;
+    bool btnHover  = false;
+    bool btnDown   = false;
+ 
+    int   hist[256] = {};
+    float histMean  = 0;
+    float histStd   = 0;
+ 
+    SDL_Rect btnRect = {};
+};
+ 
+// Atualiza a textura da janela principal com base na superfície atual
+static void reloadMainTexture(App& app) {
+    if (app.mainTex) SDL_DestroyTexture(app.mainTex);
+    app.mainTex = SDL_CreateTextureFromSurface(app.mainRen, app.curSurf);
+}
+ 
+// Recalcula estatísticas e histograma
+static void refreshStats(App& app) {
+    computeHistogram(app.curSurf, app.hist);
+    int n = app.curSurf->w * app.curSurf->h;
+    analyzeHistogram(app.hist, n, app.histMean, app.histStd);
+}
+ 
+// Renderiza o conteúdo da janela secundária (Histograma e Info) [cite: 65]
+static void renderSecondary(App& app) {
+    SDL_SetRenderDrawColor(app.secRen, 45, 45, 45, 255);
+    SDL_RenderClear(app.secRen);
+ 
+    int margin = HIST_MARGIN;
+    int histW  = SEC_WIN_W - 2 * margin;
+    int histY  = margin + FONT_SIZE + 8;
+ 
+    SDL_Color white = { 230, 230, 230, 255 };
+    renderText(app.secRen, app.font, "Histograma", margin, margin, white);
+ 
+    drawHistogram(app.secRen, app.hist, margin, histY, histW, HIST_H);
+ 
+    int infoY = histY + HIST_H + 12;
+ 
+    // Exibe classificação de brilho [cite: 69]
+    std::string meanLabel = "Media: " + std::to_string((int)app.histMean);
+    const char* lumClass =
+        app.histMean < LUM_DARK_TH   ? "escura" :
+        app.histMean < LUM_BRIGHT_TH ? "media"  : "clara";
+    renderText(app.secRen, app.font,
+               (meanLabel + " (" + lumClass + ")").c_str(),
+               margin, infoY, white);
+    infoY += FONT_SIZE + 6;
+ 
+    // Exibe classificação de contraste [cite: 70]
+    std::string stdLabel = "Desvio padrao: " + std::to_string((int)app.histStd);
+    const char* contrastClass =
+        app.histStd < STD_LOW_TH  ? "baixo" :
+        app.histStd < STD_HIGH_TH ? "medio" : "alto";
+    renderText(app.secRen, app.font,
+               (stdLabel + " (contraste " + contrastClass + ")").c_str(),
+               margin, infoY, white);
+    infoY += FONT_SIZE + 16;
+ 
+    std::string statusStr = std::string("Estado: ") +
+        (app.equalized ? "Equalizado" : "Original (cinza)");
+    SDL_Color statusCol = app.equalized ?
+        SDL_Color{120, 220, 120, 255} : SDL_Color{200, 200, 100, 255};
+    renderText(app.secRen, app.font, statusStr.c_str(), margin, infoY, statusCol);
+    infoY += FONT_SIZE + 16;
+ 
+    // Desenha o botão de ação [cite: 73, 76]
+    int btnX = (SEC_WIN_W - BTN_W) / 2;
+    app.btnRect = { btnX, infoY, BTN_W, BTN_H };
+    const char* btnLabel = app.equalized ? "Ver original" : "Equalizar";
+    BtnState bs = app.btnDown   ? BtnState::PRESSED :
+                  app.btnHover  ? BtnState::HOVER   : BtnState::NORMAL;
+    drawButton(app.secRen, app.font, btnLabel, btnX, infoY, BTN_W, BTN_H, bs);
+ 
+    infoY += BTN_H + 16;
+    SDL_Color hint = { 150, 150, 150, 255 };
+    renderText(app.secRen, app.font, "Pressione S para salvar", margin, infoY, hint);
+ 
+    SDL_RenderPresent(app.secRen);
+}
+ 
+// Renderiza a imagem na janela principal [cite: 62]
+static void renderMain(App& app) {
+    SDL_SetRenderDrawColor(app.mainRen, 20, 20, 20, 255);
+    SDL_RenderClear(app.mainRen);
+    if (app.mainTex) SDL_RenderTexture(app.mainRen, app.mainTex, nullptr, nullptr);
+    SDL_RenderPresent(app.mainRen);
+}
+ 
+// Alterna entre a versão original (cinza) e a equalizada [cite: 75]
+static void toggleEqualize(App& app) {
+    app.equalized = !app.equalized;
+    if (app.equalized) {
+        if (!app.eqSurf) app.eqSurf = equalizeHistogram(app.graySurf);
+        app.curSurf = app.eqSurf;
+    } else {
+        app.curSurf = app.graySurf;
+    }
+    refreshStats(app);
+    reloadMainTexture(app);
+}
+ 
+// Salva a imagem atual como output_image.png [cite: 79]
+static void saveImage(App& app) {
+    const char* outPath = "output_image.png";
+    if (IMG_SavePNG(app.curSurf, outPath))
+        SDL_Log("Imagem salva em: %s", outPath);
+    else
+        SDL_Log("Erro ao salvar: %s", SDL_GetError());
+}
+ 
 
 
 
